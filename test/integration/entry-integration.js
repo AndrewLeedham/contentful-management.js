@@ -331,14 +331,25 @@ describe('Entry Api', () => {
                 'title has changed',
                 'updated title'
               )
-              return updatedEntry.unpublish().then((unpublishedEntry) => {
-                expect(unpublishedEntry.isDraft(), 'entry is back in draft').ok
-                return unpublishedEntry.archive().then((archivedEntry) => {
-                  expect(archivedEntry.isArchived(), 'entry is archived').ok
-                  return archivedEntry.unarchive().then((unarchivedEntry) => {
-                    expect(unarchivedEntry.isArchived(), 'entry is not archived anymore').not.ok
-                    expect(unarchivedEntry.isDraft(), 'entry is back in draft').ok
-                    return unarchivedEntry.delete()
+              const patchOp = {
+                op: 'replace',
+                path: '/fields/title/en-US',
+                value: 'title was patched',
+              }
+              return updatedEntry.patch([[patchOp]]).then((patchedEntry) => {
+                expect(patchedEntry.fields.title['en-US']).equals(
+                  'title was patched',
+                  'updated title'
+                )
+                return patchedEntry.unpublish().then((unpublishedEntry) => {
+                  expect(unpublishedEntry.isDraft(), 'entry is back in draft').ok
+                  return unpublishedEntry.archive().then((archivedEntry) => {
+                    expect(archivedEntry.isArchived(), 'entry is archived').ok
+                    return archivedEntry.unarchive().then((unarchivedEntry) => {
+                      expect(unarchivedEntry.isArchived(), 'entry is not archived anymore').not.ok
+                      expect(unarchivedEntry.isDraft(), 'entry is back in draft').ok
+                      return unarchivedEntry.delete()
+                    })
                   })
                 })
               })
